@@ -3,6 +3,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 -- | A monad transformer supporting Haskey transactions.
+--
+-- See <https://github.com/haskell-haskey/haskey-mtl/blob/master/example/Main.hs>
+-- for a complete example.
 module Control.Monad.Haskey (
   -- * Re-exports
   module Database.Haskey.Alloc.Transaction
