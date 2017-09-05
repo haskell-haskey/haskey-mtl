@@ -19,6 +19,7 @@ module Control.Monad.Haskey (
 , FileStoreT
 , runFileStoreT
 , defFileStoreConfig
+, ConcurrentDb
 , concurrentHandles
 , openConcurrentDb
 , createConcurrentDb
