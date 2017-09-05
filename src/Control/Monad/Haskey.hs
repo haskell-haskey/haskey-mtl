@@ -17,6 +17,7 @@ module Control.Monad.Haskey (
 
   -- * Open and create (re-exports)
 , FileStoreT
+, FileStoreConfig
 , runFileStoreT
 , defFileStoreConfig
 , ConcurrentDb
