@@ -1,13 +1,10 @@
 resolver: lts-9.0
 packages:
 - '.'
-- location:
-    git: https://github.com/haskell-haskey/haskey
-    commit: 15713e421c15103
-  extra-dep: true
 extra-deps:
-- xxhash-ffi-0.2.0.0
-- lz4-0.2.3.1
+- haskey-0.2.0.0
 - haskey-btree-0.2.0.0
+- lz4-0.2.3.1
+- xxhash-ffi-0.2.0.0
 flags: {}
 extra-package-dbs: []
