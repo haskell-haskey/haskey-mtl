@@ -27,6 +27,7 @@ module Control.Monad.Haskey (
 , createConcurrentDb
 ) where
 
+import Control.Applicative (Applicative)
 import Control.Monad.Catch (MonadThrow, MonadCatch, MonadMask)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader(..), ReaderT(..), asks)
@@ -43,6 +44,8 @@ import qualified Control.Monad.Writer.Lazy as WriterL
 import qualified Control.Monad.Writer.Strict as WriterS
 
 import Data.BTree.Alloc (AllocM, AllocReaderM)
+import Data.Monoid (Monoid)
+
 import Database.Haskey.Alloc.Concurrent (ConcurrentDb, Root, Transaction,
                                          concurrentHandles,
                                          openConcurrentDb, createConcurrentDb)
@@ -74,7 +77,7 @@ newtype HaskeyT root m a = HaskeyT { fromHaskeyT :: ReaderT (ConcurrentDb root, 
                          deriving (Functor, Applicative, Monad, MonadIO,
                                    MonadThrow, MonadCatch, MonadMask)
 
-instance (Root root, MonadMask m, MonadIO m) => MonadHaskey root (HaskeyT root m) where
+instance (Root root, Applicative m, MonadMask m, MonadIO m) => MonadHaskey root (HaskeyT root m) where
     transact tx = askDb >>= runFileStoreT' . D.transact tx
     transact_ tx = askDb >>= runFileStoreT' . D.transact_ tx
     transactReadOnly tx = askDb >>= runFileStoreT' . D.transactReadOnly tx

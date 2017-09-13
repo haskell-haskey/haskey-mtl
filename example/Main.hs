@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -6,7 +7,7 @@
 {-# LANGUAGE RankNTypes #-}
 module Main where
 
-import Control.Applicative ((<$>))
+import Control.Applicative (Applicative, (<$>))
 import Control.Lens (Lens', lens, (^.), (%%~))
 import Control.Monad.Haskey
 import Control.Monad.Reader
@@ -19,6 +20,7 @@ import Data.Binary (Binary)
 import Data.Foldable (foldlM)
 import Data.Int (Int64)
 import Data.Text (Text, unpack)
+import Data.Typeable (Typeable)
 import qualified Data.BTree.Impure as Tree
 
 import Database.Haskey.Alloc.Concurrent (Root)
@@ -48,7 +50,7 @@ runApp (AppT m) r = runFileStoreHaskeyT (runReaderT m r)
 data Tweet = Tweet {
     tweetUser :: !Text
   , tweetContent :: !Text
-  } deriving (Generic, Show)
+  } deriving (Generic, Show, Typeable)
 
 instance Binary Tweet
 instance Value Tweet
@@ -56,7 +58,7 @@ instance Value Tweet
 data User = User {
     userName :: !Text
   , userEmail :: !Text
-  } deriving (Generic, Show)
+  } deriving (Generic, Show, Typeable)
 
 instance Binary User
 instance Value User
@@ -64,7 +66,7 @@ instance Value User
 data Schema = Schema {
     _schemaTweets :: Tree Int64 Tweet
   , _schemaUsers :: Tree Text User
-  } deriving (Generic, Show)
+  } deriving (Generic, Show, Typeable)
 
 instance Binary Schema
 instance Value Schema
