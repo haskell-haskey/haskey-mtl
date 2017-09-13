@@ -14,7 +14,7 @@ module Control.Monad.Haskey (
   -- * Monad
 , MonadHaskey(..)
 , HaskeyT
-, runFileStoreHaskeyT
+, runHaskeyT
 
   -- * Open and create (re-exports)
 , FileStoreT
@@ -86,12 +86,12 @@ instance MonadTrans (HaskeyT root) where
     lift = HaskeyT . lift
 
 -- | Run Haskey transactions, backed by a file store.
-runFileStoreHaskeyT :: (Root root, MonadMask m, MonadIO m)
+runHaskeyT :: (Root root, MonadMask m, MonadIO m)
                     => HaskeyT root m a
                     -> ConcurrentDb root
                     -> FileStoreConfig
                     -> m a
-runFileStoreHaskeyT m db config = runReaderT (fromHaskeyT m) (db, config)
+runHaskeyT m db config = runReaderT (fromHaskeyT m) (db, config)
 
 runFileStoreT' :: (MonadIO m, MonadMask m)
                => FileStoreT FilePath (HaskeyT root m) a

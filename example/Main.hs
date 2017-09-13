@@ -41,7 +41,7 @@ runApp :: App a
        -> ConcurrentDb Schema
        -> FileStoreConfig
        -> IO a
-runApp (AppT m) r = runFileStoreHaskeyT (runReaderT m r)
+runApp (AppT m) r = runHaskeyT (runReaderT m r)
 
 --------------------------------------------------------------------------------
 -- Definition of our custom schema. As well as query and modify functions.
