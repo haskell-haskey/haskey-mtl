@@ -2,6 +2,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE UndecidableInstances #-}
 -- | A monad transformer supporting Haskey transactions.
 --
 -- See <https://github.com/haskell-haskey/haskey-mtl/blob/master/example/Main.hs>
@@ -28,8 +29,18 @@ module Control.Monad.Haskey (
 
 import Control.Monad.Catch (MonadThrow, MonadCatch, MonadMask)
 import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Reader (ReaderT(..), asks)
+import Control.Monad.Reader (MonadReader(..), ReaderT(..), asks)
 import Control.Monad.Trans.Class (MonadTrans(..))
+
+import Control.Monad.RWS (MonadRWS)
+import Control.Monad.State (MonadState(..))
+import Control.Monad.Writer (MonadWriter(..))
+import qualified Control.Monad.RWS.Lazy as RWSL
+import qualified Control.Monad.RWS.Strict as RWSS
+import qualified Control.Monad.State.Lazy as StateL
+import qualified Control.Monad.State.Strict as StateS
+import qualified Control.Monad.Writer.Lazy as WriterL
+import qualified Control.Monad.Writer.Strict as WriterS
 
 import Data.BTree.Alloc (AllocM, AllocReaderM)
 import Database.Haskey.Alloc.Concurrent (ConcurrentDb, Root, Transaction,
@@ -43,7 +54,7 @@ import qualified Database.Haskey.Alloc.Concurrent as D
 -- | A monad supporting database transactions.
 --
 -- The type @root@ is the data type holding the roots of the database trees.
-class MonadHaskey root m | m -> root where
+class Monad m => MonadHaskey root m | m -> root where
     transact :: Root root
              => (forall n. (AllocM n, MonadMask n) => root -> n (Transaction root a))
              -> m a
@@ -89,3 +100,61 @@ askDb = HaskeyT $ asks fst
 
 askCfg :: Monad m => HaskeyT root m FileStoreConfig
 askCfg = HaskeyT $ asks snd
+
+--------------------------------------------------------------------------------
+-- Some definitions of mtl monad transformers below.
+--------------------------------------------------------------------------------
+
+instance MonadReader r m => MonadReader r (HaskeyT root m) where
+    ask = lift ask
+    reader = lift . reader
+    local f (HaskeyT (ReaderT m)) =  HaskeyT . ReaderT $ \r -> local f (m r)
+
+instance MonadHaskey root m => MonadHaskey root (ReaderT r m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+
+instance MonadState s m => MonadState s (HaskeyT root m) where
+    get = lift get
+    put = lift . put
+    state = lift . state
+
+instance MonadHaskey root m => MonadHaskey root (StateL.StateT s m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+
+instance MonadHaskey root m => MonadHaskey root (StateS.StateT s m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+
+instance MonadWriter w m => MonadWriter w (HaskeyT root m) where
+    writer = lift . writer
+    tell = lift . tell
+    listen (HaskeyT (ReaderT m)) = HaskeyT . ReaderT $ \r -> listen (m r)
+    pass (HaskeyT (ReaderT m)) = HaskeyT . ReaderT $ \r -> pass (m r)
+
+instance (Monoid w, MonadHaskey root m) => MonadHaskey root (WriterL.WriterT w m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+
+instance (Monoid w, MonadHaskey root m) => MonadHaskey root (WriterS.WriterT w m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+
+instance MonadRWS r w s m => MonadRWS r w s (HaskeyT root m) where
+
+instance (Monoid w, MonadHaskey root m) => MonadHaskey root (RWSL.RWST r w s m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+
+instance (Monoid w, MonadHaskey root m) => MonadHaskey root (RWSS.RWST r w s m) where
+    transact tx = lift $ transact tx
+    transact_ tx = lift $ transact_ tx
+    transactReadOnly tx = lift $ transactReadOnly tx
+--------------------------------------------------------------------------------
