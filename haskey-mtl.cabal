@@ -1,5 +1,5 @@
 name:                haskey-mtl
-version:             0.1.0.0
+version:             0.2.0.0
 synopsis:            A monad transformer supporting Haskey transactions.
 description:
     This library provides a monad transformer supporting Haskey transactions,
@@ -28,8 +28,8 @@ library
     exceptions              >=0.8.3 && <0.9,
     mtl                     >=2.1  && <3,
     transformers            >=0.3  && <1,
-    haskey-btree            >=0.2.0.0 && <1,
-    haskey
+    haskey-btree            >=0.2 && <1,
+    haskey                  >=0.2 && <1
 
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -41,7 +41,7 @@ test-suite haskey-mtl-example
   main-is:             Main.hs
   build-depends:
     base          >= 4.7 && <5,
-    haskey,
+    haskey        >=0.2 && <1,
     haskey-btree  >=0.2 && <1,
     haskey-mtl,
     binary        >=0.6 && <0.9 || >0.9 && <1,
