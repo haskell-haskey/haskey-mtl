@@ -14,14 +14,14 @@ import Control.Monad.Reader
 import Control.Monad.IO.Class (MonadIO, liftIO)
 
 import Data.BTree.Alloc (AllocM, AllocReaderM)
-import Data.BTree.Impure (Tree, insertTree, lookupTree, toList)
+import Data.BTree.Impure (Tree)
 import Data.BTree.Primitives (Value)
 import Data.Binary (Binary)
 import Data.Foldable (foldlM)
 import Data.Int (Int64)
 import Data.Text (Text, unpack)
 import Data.Typeable (Typeable)
-import qualified Data.BTree.Impure as Tree
+import qualified Data.BTree.Impure as B
 
 import Database.Haskey.Alloc.Concurrent (Root)
 
@@ -73,7 +73,7 @@ instance Value Schema
 instance Root Schema
 
 emptySchema :: Schema
-emptySchema = Schema Tree.empty Tree.empty
+emptySchema = Schema B.empty B.empty
 
 schemaTweets :: Lens' Schema (Tree Int64 Tweet)
 schemaTweets = lens _schemaTweets $ \s x -> s { _schemaTweets = x }
@@ -83,23 +83,23 @@ schemaUsers = lens _schemaUsers $ \s x -> s { _schemaUsers = x }
 
 -- | Insert or update a tweet.
 insertTweet :: AllocM n => Int64 -> Tweet -> Schema -> n Schema
-insertTweet k v = schemaTweets %%~ insertTree k v
+insertTweet k v = schemaTweets %%~ B.insert k v
 
 -- | Query all tweets.
 queryAllTweets :: AllocReaderM n => Schema -> n [(Int64, Tweet)]
-queryAllTweets root = toList (root ^. schemaTweets)
+queryAllTweets root = B.toList (root ^. schemaTweets)
 
 -- | Query a tweet.
 queryTweet :: AllocReaderM n => Int64 -> Schema -> n (Maybe Tweet)
-queryTweet k root = lookupTree k (root ^. schemaTweets)
+queryTweet k root = B.lookup k (root ^. schemaTweets)
 
 -- | Insert a new user.
 insertUser :: AllocM n => Text -> User -> Schema -> n Schema
-insertUser k v = schemaUsers %%~ insertTree k v
+insertUser k v = schemaUsers %%~ B.insert k v
 
 -- | Quer a user.
 queryUser :: AllocReaderM n => Text -> Schema -> n (Maybe User)
-queryUser userId root = lookupTree userId (root ^. schemaUsers)
+queryUser userId root = B.lookup userId (root ^. schemaUsers)
 
 --------------------------------------------------------------------------------
 -- Our main application.

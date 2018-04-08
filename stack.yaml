@@ -2,8 +2,12 @@ resolver: lts-9.0
 packages:
 - '.'
 extra-deps:
-- haskey-0.2.0.0
-- haskey-btree-0.2.0.0
+#- haskey-0.2.0.0
+- git: https://github.com/haskell-haskey/haskey
+  commit: 7f7eea0
+#- haskey-btree-0.2.0.0
+- git: https://github.com/haskell-haskey/haskey-btree
+  commit: 6b699c2
 - lz4-0.2.3.1
 - xxhash-ffi-0.2.0.0
 flags: {}
