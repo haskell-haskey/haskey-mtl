@@ -2,9 +2,9 @@ resolver: lts-9.0
 packages:
 - '.'
 extra-deps:
-#- haskey-0.3.0.0
+#- haskey-0.3.0.2
 - git: https://github.com/haskell-haskey/haskey
-  commit: 4964394bb
+  commit: 228ff51
 #- haskey-btree-0.3.0.0
 - git: https://github.com/haskell-haskey/haskey-btree
   commit: 4ff3a73
