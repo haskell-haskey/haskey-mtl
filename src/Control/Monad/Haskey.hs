@@ -2,6 +2,8 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 -- | A monad transformer supporting Haskey transactions.
 --
@@ -33,8 +35,13 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader(..), ReaderT(..), asks)
 import Control.Monad.Trans.Class (MonadTrans(..))
 
+import Control.Monad.Base (MonadBase(..))
 import Control.Monad.RWS (MonadRWS)
 import Control.Monad.State (MonadState(..))
+import Control.Monad.Trans.Control (MonadTransControl(..), MonadBaseControl(..),
+                                    ComposeSt(..), defaultLiftBaseWith,
+                                    defaultRestoreM, defaultLiftWith,
+                                    defaultRestoreT)
 import Control.Monad.Writer (MonadWriter(..))
 import qualified Control.Monad.RWS.Lazy as RWSL
 import qualified Control.Monad.RWS.Strict as RWSS
@@ -84,6 +91,18 @@ instance (Root root, Applicative m, MonadMask m, MonadIO m) => MonadHaskey root 
 
 instance MonadTrans (HaskeyT root) where
     lift = HaskeyT . lift
+
+deriving instance MonadBase IO m => MonadBase IO (HaskeyT root m)
+
+instance MonadTransControl (HaskeyT root) where
+    type StT (HaskeyT root) a = StT (ReaderT (ConcurrentDb root, FileStoreConfig)) a
+    liftWith = defaultLiftWith HaskeyT fromHaskeyT
+    restoreT = defaultRestoreT HaskeyT
+
+instance MonadBaseControl IO m => MonadBaseControl IO (HaskeyT root m) where
+    type StM (HaskeyT root m) a = ComposeSt (HaskeyT root) m a
+    liftBaseWith = defaultLiftBaseWith
+    restoreM     = defaultRestoreM
 
 -- | Run Haskey transactions, backed by a file store.
 runHaskeyT :: (Root root, MonadMask m, MonadIO m)
