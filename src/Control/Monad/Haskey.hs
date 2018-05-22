@@ -35,8 +35,13 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader(..), ReaderT(..), asks)
 import Control.Monad.Trans.Class (MonadTrans(..))
 
+import Control.Monad.Base (MonadBase(..))
 import Control.Monad.RWS (MonadRWS)
 import Control.Monad.State (MonadState(..))
+import Control.Monad.Trans.Control (MonadTransControl(..), MonadBaseControl(..),
+                                    ComposeSt(..), defaultLiftBaseWith,
+                                    defaultRestoreM, defaultLiftWith,
+                                    defaultRestoreT)
 import Control.Monad.Writer (MonadWriter(..))
 import qualified Control.Monad.RWS.Lazy as RWSL
 import qualified Control.Monad.RWS.Strict as RWSS
@@ -44,11 +49,6 @@ import qualified Control.Monad.State.Lazy as StateL
 import qualified Control.Monad.State.Strict as StateS
 import qualified Control.Monad.Writer.Lazy as WriterL
 import qualified Control.Monad.Writer.Strict as WriterS
-import Control.Monad.Trans.Control (MonadTransControl(..), MonadBaseControl(..),
-                                    ComposeSt(..), defaultLiftBaseWith,
-                                    defaultRestoreM, defaultLiftWith,
-                                    defaultRestoreT)
-import Control.Monad.Base (MonadBase(..))
 
 import Data.BTree.Alloc (AllocM, AllocReaderM)
 import Data.Monoid (Monoid)
